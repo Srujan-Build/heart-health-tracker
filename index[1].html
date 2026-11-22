@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0d9488">
+  <meta name="description" content="Heart-health awareness and tracking Progressive Web App for college students and staff. For awareness only. Not a doctor.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <title>Heart Health Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Top Sticky Awareness Banner - Present on EVERY screen -->
+    <aside class="top-disclaimer" id="top-disclaimer" role="note" aria-label="Medical Disclaimer">
+      <span class="badge-icon">ℹ️</span>
+      <span>For awareness only. Not a doctor.</span>
+    </aside>
+
+    <!-- App Header -->
+    <header class="app-header">
+      <div class="brand-wrapper">
+        <div class="brand-icon" aria-hidden="true">❤️</div>
+        <div>
+          <h1 class="brand-title">Heart Health</h1>
+          <div class="brand-subtitle">Community Tracker</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-open-tests" class="icon-btn" title="Viva Self-Test Suite & Demo" aria-label="Run Self-Tests">🧪</button>
+        <button id="btn-theme-toggle" class="icon-btn" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">🌓</button>
+      </div>
+    </header>
+
+    <!-- In-App Notification / Alert Bar Container -->
+    <div id="inapp-alert-container" style="padding: 0 16px; margin-top: 10px;"></div>
+
+    <!-- Main Screens Container -->
+    <main class="screens-container" id="main-content">
+
+      <!-- ==================== SCREEN 1: TODAY ==================== -->
+      <section id="screen-today" class="screen active">
+        <div class="greeting-section">
+          <div class="greeting-text" id="greeting-title">Namaste, Friend!</div>
+          <div class="greeting-subtext" id="greeting-subtitle">Here is your heart health snapshot for today.</div>
+        </div>
+
+        <!-- Automatic Tracking Quick Card -->
+        <div class="card" id="card-auto-tracking">
+          <div class="card-header">
+            <div class="card-title"><span>📡</span> Automatic Tracking</div>
+            <span class="text-muted" style="font-size: 0.75rem;">Sensor Live</span>
+          </div>
+          <p style="font-size: 0.85rem; margin-bottom: 12px;">Track your steps live using device motion sensors, or sync directly from your Bluetooth BP monitor.</p>
+          
+          <div class="grid-2" style="margin-bottom: 8px;">
+            <button id="btn-toggle-steps" class="btn btn-secondary btn-sm" style="width: 100%;">
+              <span>🚶</span> <span id="label-step-tracker">Start counting</span>
+            </button>
+            <button id="btn-connect-bluetooth" class="btn btn-secondary btn-sm" style="width: 100%;">
+              <span>📶</span> Connect Bluetooth
+            </button>
+          </div>
+          <div id="auto-tracking-status" class="text-muted" style="font-size: 0.78rem; text-align: center; margin-top: 4px;">
+            Steps are approximate. Tap "Start counting" to begin.
+          </div>
+        </div>
+
+        <!-- Step Progress Ring -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>👟</span> Daily Steps</div>
+            <span class="badge badge-normal" id="today-step-percent">0% Goal</span>
+          </div>
+          <div class="step-ring-container">
+            <svg class="circular-chart" viewBox="0 0 36 36">
+              <path class="circle-bg"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <path id="step-ring-progress" class="circle-fill"
+                stroke-dasharray="0, 100"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+            </svg>
+            <div class="ring-center-content">
+              <div class="ring-steps-num" id="today-steps-display">0</div>
+              <div class="ring-steps-label" id="today-steps-goal-label">Goal: 8,000</div>
+            </div>
+          </div>
+          <div class="step-details-grid">
+            <div class="stat-pill">
+              <div class="stat-pill-label">Active Minutes</div>
+              <div class="stat-pill-value" id="today-active-mins">0 min</div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-pill-label">Approx Distance</div>
+              <div class="stat-pill-value" id="today-approx-dist">0.0 km</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Latest BP Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🩺</span> Latest Blood Pressure</div>
+            <span class="badge badge-normal" id="latest-bp-status">No Data</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 8px; margin: 8px 0;">
+            <span style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary);" id="latest-bp-value">-- / --</span>
+            <span style="color: var(--text-muted); font-size: 0.95rem;">mmHg</span>
+            <span style="margin-left: auto; font-size: 0.95rem; color: var(--text-muted);" id="latest-pulse-display">Pulse: -- bpm</span>
+          </div>
+          <div class="text-muted" id="latest-bp-meta" style="font-size: 0.78rem;">
+            Source: 2017 AHA/ACC Guideline • No readings logged yet
+          </div>
+        </div>
+
+        <!-- Lifestyle Risk Level Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🛡️</span> Lifestyle Risk Level</div>
+            <span class="text-muted" style="font-size: 0.75rem;">Today's Assessment</span>
+          </div>
+          <div class="risk-meter-box low" id="risk-meter-box">
+            <div class="risk-icon" id="risk-box-icon">🟢</div>
+            <div class="risk-info">
+              <h4 id="risk-box-title">Low Lifestyle Risk</h4>
+              <p id="risk-box-desc">0 lifestyle risk points recorded today.</p>
+            </div>
+          </div>
+          <div class="text-muted" style="font-size: 0.78rem; margin-top: 8px;">
+            Assesses: exercise &lt;30m, sleep &lt;6h, oily food, extra salt, tobacco, stress &gt;3, family history, and BP stage.
+          </div>
+        </div>
+
+        <!-- Today's Medicines -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>💊</span> Today's Medicines</div>
+            <button class="btn btn-outline btn-sm" id="btn-quick-goto-reminders">Manage</button>
+          </div>
+          <div id="today-medicines-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Upcoming Check-ups -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🗓️</span> Upcoming Check-ups</div>
+          </div>
+          <div id="today-checkups-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== SCREEN 2: ADD READING ==================== -->
+      <section id="screen-add" class="screen">
+        <h2>Add Today's Reading</h2>
+        <p style="margin-bottom: 16px;">Log your numbers and daily habits. Takes less than a minute.</p>
+
+        <form id="form-add-reading">
+          <!-- Blood Pressure Inputs -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 12px;"><span>🩺</span> Blood Pressure & Pulse</div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="input-systolic">Top Number (Systolic)</label>
+                <input type="number" id="input-systolic" class="form-control" placeholder="e.g. 120" min="60" max="260" required>
+                <div class="input-hint">Pumping pressure (mmHg)</div>
+              </div>
+              <div class="form-group">
+                <label for="input-diastolic">Bottom Number (Diastolic)</label>
+                <input type="number" id="input-diastolic" class="form-control" placeholder="e.g. 80" min="40" max="160" required>
+                <div class="input-hint">Resting pressure (mmHg)</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="input-pulse">Pulse / Heart Rate (bpm)</label>
+              <input type="number" id="input-pulse" class="form-control" placeholder="e.g. 72" min="30" max="220">
+              <div class="input-hint">Beats per minute (resting)</div>
+            </div>
+            <div id="bp-validation-warning" class="alert-box urgent" style="display: none;"></div>
+          </div>
+
+          <!-- Activity & Sleep Inputs -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 12px;"><span>🏃</span> Activity & Sleep</div>
+            <div class="grid-3">
+              <div class="form-group">
+                <label for="input-steps">Steps</label>
+                <input type="number" id="input-steps" class="form-control" placeholder="e.g. 6500" min="0" max="100000">
+              </div>
+              <div class="form-group">
+                <label for="input-exercise">Exercise (min)</label>
+                <input type="number" id="input-exercise" class="form-control" placeholder="e.g. 30" min="0" max="720">
+              </div>
+              <div class="form-group">
+                <label for="input-sleep">Sleep (hours)</label>
+                <input type="number" id="input-sleep" class="form-control" placeholder="e.g. 7.5" step="0.5" min="0" max="24">
+              </div>
+            </div>
+          </div>
+
+          <!-- Stress Level 1 to 5 -->
+          <div class="card">
+            <div class="card-title"><span>🧘</span> Stress Level (1 to 5)</div>
+            <div class="stress-selector" id="stress-selector">
+              <button type="button" class="stress-btn" data-level="1">
+                <span class="emoji">😌</span>
+                <span class="level-num">1: Calm</span>
+              </button>
+              <button type="button" class="stress-btn" data-level="2">
+                <span class="emoji">🙂</span>
+                <span class="level-num">2: Mild</span>
+              </button>
+              <button type="button" class="stress-btn selected" data-level="3">
+                <span class="emoji">😐</span>
+                <span class="level-num">3: Normal</span>
+              </button>
+              <button type="button" class="stress-btn" data-level="4">
+                <span class="emoji">😟</span>
+                <span class="level-num">4: High</span>
+              </button>
+              <button type="button" class="stress-btn" data-level="5">
+                <span class="emoji">😫</span>
+                <span class="level-num">5: Severe</span>
+              </button>
+            </div>
+            <input type="hidden" id="input-stress" value="3">
+          </div>
+
+          <!-- Daily Lifestyle Habits Checkboxes -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 12px;"><span>🥗</span> Today's Habits (Tick if true)</div>
+            <label class="checkbox-card">
+              <div class="checkbox-label-group">
+                <span class="checkbox-title">Oily / deep fried food</span>
+                <span class="checkbox-subtitle">Samosa, pakora, puri, fast food</span>
+              </div>
+              <input type="checkbox" id="check-oily">
+            </label>
+            <label class="checkbox-card">
+              <div class="checkbox-label-group">
+                <span class="checkbox-title">Extra added salt</span>
+                <span class="checkbox-subtitle">Papad, pickles, namkeen, or table salt added</span>
+              </div>
+              <input type="checkbox" id="check-salt">
+            </label>
+            <label class="checkbox-card">
+              <div class="checkbox-label-group">
+                <span class="checkbox-title">Tobacco or smoking</span>
+                <span class="checkbox-subtitle">Bidi, cigarette, gutkha, or paan masala</span>
+              </div>
+              <input type="checkbox" id="check-tobacco">
+            </label>
+          </div>
+
+          <!-- Critical Warning Signs Checkboxes (Triggers Emergency!) -->
+          <div class="card" style="border-color: #fca5a5;">
+            <div class="card-title" style="color: var(--danger); margin-bottom: 8px;">
+              <span>⚠️</span> Warning Signs Right Now (Tick if experienced)
+            </div>
+            <p style="font-size: 0.82rem; margin-bottom: 12px; color: var(--danger);">
+              If you experience any of these, stop immediately and seek emergency medical care.
+            </p>
+            <label class="checkbox-card danger-sign">
+              <div class="checkbox-label-group">
+                <span class="checkbox-title">Chest pain or heavy tightness</span>
+                <span class="checkbox-subtitle">Heaviness, squeezing in center of chest</span>
+              </div>
+              <input type="checkbox" id="check-warn-chest">
+            </label>
+            <label class="checkbox-card danger-sign">
+              <div class="checkbox-label-group">
+                <span class="checkbox-title">Breathlessness while resting</span>
+                <span class="checkbox-subtitle">Hard to breathe even while sitting or lying still</span>
+              </div>
+              <input type="checkbox" id="check-warn-breathless">
+            </label>
+            <label class="checkbox-card danger-sign">
+              <div class="checkbox-label-group">
+                <span class="checkbox-title">Fainting or sudden blackout</span>
+                <span class="checkbox-subtitle">Loss of consciousness or sudden collapse</span>
+              </div>
+              <input type="checkbox" id="check-warn-fainting">
+            </label>
+            <label class="checkbox-card danger-sign">
+              <div class="checkbox-label-group">
+                <span class="checkbox-title">Face drooping, weak arm, slurred speech</span>
+                <span class="checkbox-subtitle">Sudden FAST stroke warning signs</span>
+              </div>
+              <input type="checkbox" id="check-warn-stroke">
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-save-reading">
+            💾 Save Today's Reading
+          </button>
+        </form>
+      </section>
+
+      <!-- ==================== SCREEN 3: PROGRESS ==================== -->
+      <section id="screen-progress" class="screen">
+        <h2>Heart Health Progress</h2>
+        <p style="margin-bottom: 16px;">Visual trends of your blood pressure and daily habits.</p>
+
+        <!-- Pure SVG Line Chart for Blood Pressure -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>📈</span> Blood Pressure Trend (mmHg)</div>
+          </div>
+          <div class="chart-container" id="bp-chart-wrapper">
+            <!-- Dynamic SVG inserted by app.js -->
+            <svg id="bp-svg-chart" class="chart-svg" viewBox="0 0 460 220" role="img" aria-label="BP Line Chart"></svg>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--teal-600);"></div>
+              <span>Systolic (Top)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #2563eb;"></div>
+              <span>Diastolic (Bottom)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #dc2626; border-top: 2px dashed #dc2626;"></div>
+              <span>Target (130/80)</span>
+            </div>
+          </div>
+          <div class="text-muted" style="font-size: 0.78rem; text-align: center; margin-top: 8px;">
+            Dashed red line = 130 mmHg; Dashed blue line = 80 mmHg (2017 AHA guideline).
+          </div>
+        </div>
+
+        <!-- Pure SVG Bar Charts for Steps, Exercise & Sleep -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>👟</span> Daily Steps (with Goal Line)</div>
+          </div>
+          <div class="chart-container">
+            <svg id="steps-svg-chart" class="chart-svg" viewBox="0 0 460 180" role="img" aria-label="Steps Bar Chart"></svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>⏱️</span> Exercise & Sleep (Recent Days)</div>
+          </div>
+          <div class="chart-container">
+            <svg id="exercise-sleep-svg-chart" class="chart-svg" viewBox="0 0 460 180" role="img" aria-label="Exercise and Sleep Chart"></svg>
+          </div>
+        </div>
+
+        <!-- Table of All Readings -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>📋</span> Logged Readings History</div>
+            <span class="text-muted" id="table-readings-count">0 records</span>
+          </div>
+          <div class="table-responsive">
+            <table class="readings-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>BP (mmHg)</th>
+                  <th>Pulse</th>
+                  <th>Steps</th>
+                  <th>Exercise</th>
+                  <th>Sleep</th>
+                  <th>Stress</th>
+                  <th>Type</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="readings-table-body">
+                <tr>
+                  <td colspan="9" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                    No readings logged yet. Add your first reading above!
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SCREEN 4: DIET PLAN ==================== -->
+      <section id="screen-diet" class="screen">
+        <h2>Heart-Smart Diet Plan</h2>
+        <p style="margin-bottom: 14px;">Tailored general Indian nutrition guidelines based on your profile, habits, and BP category.</p>
+
+        <!-- Profile Form Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>👤</span> Your Profile & Health Background</div>
+            <button class="btn btn-outline btn-sm" id="btn-toggle-profile-form">Edit Profile</button>
+          </div>
+
+          <form id="form-profile" style="display: block;">
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="profile-nickname">Nickname</label>
+                <input type="text" id="profile-nickname" class="form-control" placeholder="e.g. Rahul / Dadi" maxlength="20" required>
+                <div class="input-hint">For your privacy, do not use real full names.</div>
+              </div>
+              <div class="form-group">
+                <label for="profile-age-group">Age Group</label>
+                <select id="profile-age-group" class="form-select">
+                  <option value="under30">Under 30 (Student)</option>
+                  <option value="30to45">30 to 45 (Staff / Faculty)</option>
+                  <option value="46to60">46 to 60 (Senior Staff)</option>
+                  <option value="over60">60+ (Elder / Retired)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="profile-diet-pref">Food Preference</label>
+                <select id="profile-diet-pref" class="form-select">
+                  <option value="veg">Vegetarian (Shakahari)</option>
+                  <option value="veg-egg">Vegetarian with Eggs</option>
+                  <option value="nonveg">Non-Vegetarian</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="profile-step-goal">Daily Step Goal</label>
+                <input type="number" id="profile-step-goal" class="form-control" value="8000" min="1000" max="30000" step="500">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Existing Health Conditions (Tick all that apply):</label>
+              <div class="grid-2" style="margin-top: 6px;">
+                <label class="checkbox-card" style="margin-bottom: 4px;">
+                  <span class="checkbox-title">High Blood Pressure</span>
+                  <input type="checkbox" id="cond-high-bp">
+                </label>
+                <label class="checkbox-card" style="margin-bottom: 4px;">
+                  <span class="checkbox-title">Diabetes</span>
+                  <input type="checkbox" id="cond-diabetes">
+                </label>
+                <label class="checkbox-card" style="margin-bottom: 4px;">
+                  <span class="checkbox-title">High Cholesterol</span>
+                  <input type="checkbox" id="cond-cholesterol">
+                </label>
+                <label class="checkbox-card" style="margin-bottom: 4px;">
+                  <span class="checkbox-title">Overweight</span>
+                  <input type="checkbox" id="cond-overweight">
+                </label>
+                <label class="checkbox-card" style="margin-bottom: 4px;">
+                  <span class="checkbox-title">Kidney Disease</span>
+                  <input type="checkbox" id="cond-kidney">
+                </label>
+                <label class="checkbox-card" style="margin-bottom: 4px;">
+                  <span class="checkbox-title">Past Heart Problem</span>
+                  <input type="checkbox" id="cond-heart">
+                </label>
+              </div>
+            </div>
+
+            <label class="checkbox-card" style="margin-bottom: 16px;">
+              <div class="checkbox-label-group">
+                <span class="checkbox-title">Family History of Early Heart Disease</span>
+                <span class="checkbox-subtitle">Parents or siblings with heart condition before age 55</span>
+              </div>
+              <input type="checkbox" id="cond-family-history">
+            </label>
+
+            <!-- Emergency Contact Settings -->
+            <div class="card" style="background-color: var(--bg-card-subtle); border-color: var(--border-color);">
+              <div class="card-title" style="margin-bottom: 8px;"><span>🚨</span> Emergency SOS Contact</div>
+              <p style="font-size: 0.8rem; margin-bottom: 10px;">This contact will be called or texted during an emergency.</p>
+              <div class="grid-2">
+                <div class="form-group">
+                  <label for="profile-contact-name">Contact Name</label>
+                  <input type="text" id="profile-contact-name" class="form-control" placeholder="e.g. Papa / Priya">
+                </div>
+                <div class="form-group">
+                  <label for="profile-contact-phone">Phone Number</label>
+                  <input type="tel" id="profile-contact-phone" class="form-control" placeholder="e.g. 9876543210">
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-save-profile">💾 Save Profile & Update Diet</button>
+          </form>
+        </div>
+
+        <!-- Generated Diet Plan View -->
+        <div id="generated-diet-container">
+          <!-- Dynamically populated by app.js based on rules -->
+        </div>
+
+      </section>
+
+      <!-- ==================== SCREEN 5: REMINDERS ==================== -->
+      <section id="screen-reminders" class="screen">
+        <h2>Reminders & Check-ups</h2>
+        <div class="alert-box info" style="margin-bottom: 16px;">
+          <span>ℹ️</span>
+          <span><strong>Important:</strong> The app only records what your doctor prescribed. It never prescribes or changes medicines.</span>
+        </div>
+
+        <!-- Notification Setup Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🔔</span> Push Notifications</div>
+            <span class="badge badge-normal" id="notif-status-badge">Check</span>
+          </div>
+          <p style="font-size: 0.86rem; margin-bottom: 12px;">Get on-screen alerts for due medicines and weekly BP checks while the app is active.</p>
+          <div class="grid-2">
+            <button id="btn-enable-notif" class="btn btn-primary btn-sm">Turn on notifications</button>
+            <button id="btn-test-emergency-notif" class="btn btn-secondary btn-sm">Test SOS Alert</button>
+          </div>
+          <div class="text-muted" style="font-size: 0.75rem; margin-top: 8px;">
+            Note: Mobile browsers may sleep background tasks when the phone is locked. Please set a regular phone alarm as well.
+          </div>
+        </div>
+
+        <!-- Medicine Reminders -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>💊</span> Medicine Reminders</div>
+            <button class="btn btn-outline btn-sm" id="btn-toggle-add-med">+ Add Medicine</button>
+          </div>
+
+          <!-- Add Medicine Form -->
+          <form id="form-add-med" style="display: none; background-color: var(--bg-card-subtle); padding: 12px; border-radius: var(--radius-md); margin-bottom: 14px;">
+            <div class="form-group">
+              <label for="med-name">Medicine Name</label>
+              <input type="text" id="med-name" class="form-control" placeholder="e.g. Amlodipine" required>
+            </div>
+            <div class="form-group">
+              <label for="med-dose">Dose / Note</label>
+              <input type="text" id="med-dose" class="form-control" placeholder="e.g. 5 mg after breakfast" required>
+            </div>
+            <div class="form-group">
+              <label>Times per day (Select up to 3):</label>
+              <div class="grid-3" style="margin-top: 6px;">
+                <label class="checkbox-card" style="padding: 8px;">
+                  <span class="checkbox-title" style="font-size: 0.85rem;">🌅 Morning</span>
+                  <input type="checkbox" id="med-time-morning" checked>
+                </label>
+                <label class="checkbox-card" style="padding: 8px;">
+                  <span class="checkbox-title" style="font-size: 0.85rem;">☀️ Afternoon</span>
+                  <input type="checkbox" id="med-time-afternoon">
+                </label>
+                <label class="checkbox-card" style="padding: 8px;">
+                  <span class="checkbox-title" style="font-size: 0.85rem;">🌙 Night</span>
+                  <input type="checkbox" id="med-time-night">
+                </label>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">Save Medicine</button>
+          </form>
+
+          <!-- 7-Day Adherence Metric -->
+          <div style="background-color: var(--bg-card-subtle); padding: 10px 12px; border-radius: var(--radius-md); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem;">7-Day Medicine Adherence</div>
+              <div class="text-muted" style="font-size: 0.78rem;">Doses marked taken on schedule</div>
+            </div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary);" id="med-adherence-pct">100%</div>
+          </div>
+
+          <div id="medicines-list-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Check-up Reminders -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🗓️</span> Routine Check-up Schedule</div>
+            <button class="btn btn-outline btn-sm" id="btn-toggle-add-checkup">+ Custom</button>
+          </div>
+
+          <!-- Add Custom Checkup Form -->
+          <form id="form-add-checkup" style="display: none; background-color: var(--bg-card-subtle); padding: 12px; border-radius: var(--radius-md); margin-bottom: 14px;">
+            <div class="form-group">
+              <label for="checkup-name">Check-up Name</label>
+              <input type="text" id="checkup-name" class="form-control" placeholder="e.g. Eye Test / ECG" required>
+            </div>
+            <div class="form-group">
+              <label for="checkup-interval">Repeat Gap (Days)</label>
+              <input type="number" id="checkup-interval" class="form-control" value="30" min="1" max="365" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">Save Check-up</button>
+          </form>
+
+          <div id="checkups-list-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SCREEN 6: EMERGENCY CHECK ==================== -->
+      <section id="screen-emergency" class="screen">
+        <h2>Emergency Symptom Check</h2>
+        <p style="margin-bottom: 14px;">Check for acute red flag heart or stroke symptoms right now.</p>
+
+        <div class="alert-box emergency" style="margin-bottom: 16px;">
+          <span>🚨</span>
+          <span><strong>In a severe crisis, call 108 or 112 immediately.</strong> Do not wait for symptoms to go away.</span>
+        </div>
+
+        <!-- Interactive Checklist -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom: 10px; color: var(--danger);">
+            <span>⚠️</span> Acute Red Flag Symptoms
+          </div>
+          <p style="font-size: 0.85rem; margin-bottom: 12px;">Tick any symptom present right now:</p>
+
+          <label class="checkbox-card danger-sign">
+            <div class="checkbox-label-group">
+              <span class="checkbox-title">Chest pain, tightness or crushing pressure</span>
+              <span class="checkbox-subtitle">Heavy elephant-on-chest sensation</span>
+            </div>
+            <input type="checkbox" id="sym-chest-pain">
+          </label>
+
+          <label class="checkbox-card danger-sign">
+            <div class="checkbox-label-group">
+              <span class="checkbox-title">Pain radiating to left arm, neck, jaw, or back</span>
+              <span class="checkbox-subtitle">Ache or tightness spreading upwards or outward</span>
+            </div>
+            <input type="checkbox" id="sym-radiating-pain">
+          </label>
+
+          <label class="checkbox-card danger-sign">
+            <div class="checkbox-label-group">
+              <span class="checkbox-title">Breathlessness while resting still</span>
+              <span class="checkbox-subtitle">Gasping or shortness of breath without physical effort</span>
+            </div>
+            <input type="checkbox" id="sym-breathless-rest">
+          </label>
+
+          <label class="checkbox-card danger-sign">
+            <div class="checkbox-label-group">
+              <span class="checkbox-title">Fainting or sudden loss of consciousness</span>
+              <span class="checkbox-subtitle">Passed out or collapsed</span>
+            </div>
+            <input type="checkbox" id="sym-fainting">
+          </label>
+
+          <label class="checkbox-card danger-sign">
+            <div class="checkbox-label-group">
+              <span class="checkbox-title">Cold sweat accompanied by nausea or vomiting</span>
+              <span class="checkbox-subtitle">Profuse clammy cold perspiration</span>
+            </div>
+            <input type="checkbox" id="sym-cold-sweat">
+          </label>
+
+          <label class="checkbox-card danger-sign">
+            <div class="checkbox-label-group">
+              <span class="checkbox-title">Face drooping, arm weakness, or slurred speech</span>
+              <span class="checkbox-subtitle">Sudden stroke signs (FAST)</span>
+            </div>
+            <input type="checkbox" id="sym-stroke-fast">
+          </label>
+
+          <label class="checkbox-card danger-sign">
+            <div class="checkbox-label-group">
+              <span class="checkbox-title">Sudden severe headache ("worst headache of life")</span>
+              <span class="checkbox-subtitle">Sudden thunderclap pain without clear cause</span>
+            </div>
+            <input type="checkbox" id="sym-severe-headache">
+          </label>
+
+          <div style="margin: 14px 0 6px 0; font-weight: 700; font-size: 0.95rem;">Other concerning sensations:</div>
+
+          <label class="checkbox-card">
+            <div class="checkbox-label-group">
+              <span class="checkbox-title">Racing heartbeat or fluttering in chest</span>
+              <span class="checkbox-subtitle">Heart pounding unusually fast while sitting</span>
+            </div>
+            <input type="checkbox" id="sym-racing-heart">
+          </label>
+
+          <label class="checkbox-card">
+            <div class="checkbox-label-group">
+              <span class="checkbox-title">Dizziness or severe lightheadedness</span>
+              <span class="checkbox-subtitle">Feeling unsteady or room spinning</span>
+            </div>
+            <input type="checkbox" id="sym-dizziness">
+          </label>
+        </div>
+
+        <!-- Optional BP & Pulse Inputs -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom: 10px;"><span>🩺</span> Optional Current Measurements</div>
+          <div class="grid-3">
+            <div class="form-group">
+              <label for="sym-bp-systolic">Systolic</label>
+              <input type="number" id="sym-bp-systolic" class="form-control" placeholder="Top">
+            </div>
+            <div class="form-group">
+              <label for="sym-bp-diastolic">Diastolic</label>
+              <input type="number" id="sym-bp-diastolic" class="form-control" placeholder="Bottom">
+            </div>
+            <div class="form-group">
+              <label for="sym-pulse">Pulse</label>
+              <input type="number" id="sym-pulse" class="form-control" placeholder="bpm">
+            </div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-latest-to-sym" style="width: 100%;">
+            Use Latest Logged BP & Pulse
+          </button>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="btn-eval-emergency" style="min-height: 54px; font-size: 1.1rem;">
+          ⚡ Evaluate Emergency Rules Now
+        </button>
+
+        <!-- Evaluation Results Box -->
+        <div id="emergency-result-box" style="margin-top: 16px; display: none;"></div>
+
+      </section>
+
+      <!-- ==================== SCREEN 7: SUMMARY ==================== -->
+      <section id="screen-summary" class="screen">
+        <h2>Health Summary & Analytics</h2>
+        <p style="margin-bottom: 16px;">Overall metrics aggregated from all your recorded habits.</p>
+
+        <div class="step-details-grid" style="margin-bottom: 16px;">
+          <div class="stat-pill">
+            <div class="stat-pill-label">Total Readings</div>
+            <div class="stat-pill-value" id="summary-total-readings">0</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-pill-label">Average BP</div>
+            <div class="stat-pill-value" id="summary-avg-bp">-- / --</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-pill-label">Average Steps</div>
+            <div class="stat-pill-value" id="summary-avg-steps">0</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-pill-label">Goal Met Days</div>
+            <div class="stat-pill-value" id="summary-goal-days">0 days</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-pill-label">High-Risk Days</div>
+            <div class="stat-pill-value" id="summary-risk-days">0</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-pill-label">Medicine Adherence</div>
+            <div class="stat-pill-value" id="summary-med-adherence">100%</div>
+          </div>
+        </div>
+
+        <!-- AHA Guideline Reference Card -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom: 8px;"><span>📖</span> Blood Pressure Reference Guide</div>
+          <p style="font-size: 0.82rem; margin-bottom: 8px;">Source: <strong>2017 AHA/ACC High Blood Pressure Guideline</strong></p>
+          <div style="font-size: 0.82rem; line-height: 1.6;">
+            <div>🟢 <strong>Normal:</strong> Below 120 and below 80 mmHg</div>
+            <div>🟡 <strong>Elevated:</strong> 120-129 and below 80 mmHg</div>
+            <div>🟠 <strong>High Stage 1:</strong> 130-139 or 80-89 mmHg</div>
+            <div>🔴 <strong>High Stage 2:</strong> 140+ or 90+ mmHg</div>
+            <div>🚨 <strong>Hypertensive Crisis:</strong> Over 180 or over 120 mmHg</div>
+          </div>
+        </div>
+
+        <!-- Privacy & Local Storage Data Management -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom: 8px;"><span>🔒</span> Privacy & Data Control</div>
+          <p style="font-size: 0.85rem; margin-bottom: 12px;">All information is stored strictly on this device in localStorage. No external servers or analytics are used.</p>
+          
+          <div class="grid-2">
+            <button id="btn-export-data" class="btn btn-secondary btn-sm">
+              <span>📤</span> Export JSON Data
+            </button>
+            <button id="btn-load-sample" class="btn btn-secondary btn-sm">
+              <span>📥</span> Load Sample Data
+            </button>
+          </div>
+
+          <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+            <button id="btn-trigger-delete-data" class="btn btn-danger btn-sm" style="width: 100%;">
+              🗑️ Delete All My Data
+            </button>
+          </div>
+        </div>
+
+        <!-- College Project Info -->
+        <div class="card text-muted" style="text-align: center; font-size: 0.8rem;">
+          <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Heart Health Tracker PWA</div>
+          <div>College Community Project • Offline Enabled PWA</div>
+          <div>Plain HTML, CSS & JavaScript • Zero Frameworks</div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FLOATING SOS BUTTON - Visible on EVERY screen -->
+    <button id="btn-floating-sos" class="sos-floating-btn" aria-label="Emergency SOS">
+      <div class="sos-pulse-ring"></div>
+      <span>SOS</span>
+    </button>
+
+    <!-- BOTTOM TAB NAVIGATION BAR - All >= 44px -->
+    <nav class="bottom-nav" id="bottom-nav" aria-label="Main Navigation">
+      <button class="nav-tab active" data-screen="screen-today" aria-label="Today Screen">
+        <span class="nav-tab-icon">🏠</span>
+        <span class="nav-tab-label">Today</span>
+      </button>
+      <button class="nav-tab" data-screen="screen-add" aria-label="Add Reading Screen">
+        <span class="nav-tab-icon">➕</span>
+        <span class="nav-tab-label">Add</span>
+      </button>
+      <button class="nav-tab" data-screen="screen-progress" aria-label="Progress Charts Screen">
+        <span class="nav-tab-icon">📈</span>
+        <span class="nav-tab-label">Progress</span>
+      </button>
+      <button class="nav-tab" data-screen="screen-diet" aria-label="Diet Plan Screen">
+        <span class="nav-tab-icon">🥗</span>
+        <span class="nav-tab-label">Diet</span>
+      </button>
+      <button class="nav-tab" data-screen="screen-reminders" aria-label="Reminders Screen">
+        <span class="nav-tab-icon">⏰</span>
+        <span class="nav-tab-label">Reminders</span>
+      </button>
+      <button class="nav-tab" data-screen="screen-emergency" aria-label="Emergency Checker Screen">
+        <span class="nav-tab-icon">🚨</span>
+        <span class="nav-tab-label">Emergency</span>
+      </button>
+      <button class="nav-tab" data-screen="screen-summary" aria-label="Summary Screen">
+        <span class="nav-tab-icon">📊</span>
+        <span class="nav-tab-label">Summary</span>
+      </button>
+    </nav>
+
+    <!-- FULLSCREEN EMERGENCY SOS MODAL -->
+    <div id="sos-modal" class="sos-modal" role="dialog" aria-modal="true" aria-labelledby="sos-title">
+      <div class="sos-card">
+        <div class="sos-header">
+          <div class="sos-title" id="sos-title"><span>🚨</span> EMERGENCY SOS</div>
+          <div class="text-muted" style="margin-top: 4px; font-size: 0.9rem;">Immediate Emergency Assistance</div>
+        </div>
+
+        <div id="sos-dynamic-warning" class="sos-warning-banner" style="display: none;">
+          ⚠️ Emergency detected! Contact assistance immediately.
+        </div>
+
+        <div class="sos-buttons-list">
+          <!-- Button 1: User's Saved Contact -->
+          <a href="#" id="sos-call-contact" class="sos-call-btn contact-btn">
+            <span>📞</span> <span id="sos-contact-label">Call Contact</span>
+          </a>
+
+          <div id="sos-no-contact-msg" class="alert-box urgent" style="display: none; font-size: 0.85rem; padding: 8px 12px;">
+            ℹ️ No emergency contact saved. Please add one in Profile.
+          </div>
+
+          <!-- Button 2: Ambulance 108 -->
+          <a href="tel:108" class="sos-call-btn ambulance">
+            <span>🚑</span> <span>Call 108 (Ambulance)</span>
+          </a>
+
+          <!-- Button 3: All-in-one Emergency 112 -->
+          <a href="tel:112" class="sos-call-btn police">
+            <span>🚨</span> <span>Call 112 (Emergency)</span>
+          </a>
+        </div>
+
+        <!-- Location Helper for SOS -->
+        <div class="sos-location-box">
+          <button id="btn-get-location" class="btn btn-secondary btn-sm" style="width: 100%;">
+            <span>📍</span> Send my location to my contact
+          </button>
+          <div id="sos-location-text" class="text-muted" style="font-size: 0.8rem; margin-top: 8px;">
+            Tap to fetch GPS coordinates to send via SMS or WhatsApp.
+          </div>
+          <div id="sos-sms-action-wrapper" style="margin-top: 8px; display: none;">
+            <a href="#" id="sos-sms-link" class="btn btn-primary btn-sm" style="width: 100%;">
+              <span>💬</span> Send Location via SMS
+            </a>
+          </div>
+        </div>
+
+        <!-- Important Reality Note -->
+        <div class="sos-note">
+          <strong>Important:</strong> A web page cannot dial automatically without you tapping. Tapping opens your phone dialer with the number pre-filled; you must press the green call button.
+        </div>
+
+        <button id="btn-close-sos" class="btn btn-secondary sos-close-btn">
+          ✕ Back to Tracker
+        </button>
+      </div>
+    </div>
+
+    <!-- TWO-STEP CONFIRMATION MODAL (No window.alert or window.confirm) -->
+    <div id="confirm-modal" class="dialog-modal" role="dialog" aria-modal="true">
+      <div class="dialog-card">
+        <h3 id="confirm-modal-title" style="color: var(--danger); margin-bottom: 8px;">Confirm Action</h3>
+        <p id="confirm-modal-message" style="margin-bottom: 20px; font-size: 0.95rem;">Are you sure?</p>
+        <div class="grid-2">
+          <button id="btn-confirm-cancel" class="btn btn-secondary btn-sm">Cancel</button>
+          <button id="btn-confirm-proceed" class="btn btn-danger btn-sm">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE VIVA & SELF-TEST SUITE MODAL -->
+    <div id="test-suite-modal" class="dialog-modal" role="dialog" aria-modal="true">
+      <div class="dialog-card" style="max-width: 480px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <h3 style="color: var(--primary);">🧪 Viva Voce Test Suite</h3>
+          <button id="btn-close-tests" class="icon-btn" style="min-width: 32px; min-height: 32px; width: 32px; height: 32px;">✕</button>
+        </div>
+        <p style="font-size: 0.85rem; margin-bottom: 10px;">
+          Runs comprehensive automated test cases for exam evaluation (Bluetooth packet parsing, AHA BP rules, and Emergency detector triage).
+        </p>
+        <div id="test-suite-output" class="test-suite-log">Tap 'Run All Tests' to execute test cases...</div>
+        <div class="grid-2">
+          <button id="btn-run-all-tests" class="btn btn-primary btn-sm">▶ Run All Tests</button>
+          <button id="btn-copy-test-results" class="btn btn-secondary btn-sm">📋 Copy Results</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
